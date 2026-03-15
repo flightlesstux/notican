@@ -1,3 +1,9 @@
+## [1.1.0](https://github.com/flightlesstux/notican/compare/v1.0.1...v1.1.0) (2026-03-15)
+
+### Features
+
+* add robots.txt and sitemap.xml for search engine crawling ([94f946a](https://github.com/flightlesstux/notican/commit/94f946a2951fc8737c1eb5036884173b259ce0b1))
+
 ## [1.0.1](https://github.com/flightlesstux/notican/compare/v1.0.0...v1.0.1) (2026-03-15)
 
 ### Bug Fixes
