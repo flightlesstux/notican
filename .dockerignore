@@ -12,4 +12,3 @@ src/__fixtures__
 .github
 *.md
 jest.config.ts
-tsconfig.json
