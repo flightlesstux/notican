@@ -1,6 +1,6 @@
 {
   "name": "notican",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Autonomous Engineering Intelligence Hub: bidirectional GitHub and Notion sync powered by Claude AI",
   "main": "dist/index.js",
   "files": [
