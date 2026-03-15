@@ -1,0 +1,115 @@
+name: Release
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+  id-token: write
+
+jobs:
+  # ── CI gate ────────────────────────────────────────────────────────────────
+  ci:
+    name: Lint · Build · Test
+    runs-on: ubuntu-latest
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - run: npm ci
+
+      - run: npm run lint
+
+      - run: npm run build
+
+      - name: Test with coverage
+        run: npm test -- --coverage --ci
+        env:
+          GITHUB_WEBHOOK_SECRET: test-secret
+          GITHUB_TOKEN: test-token
+          GITHUB_OWNER: test-owner
+          GITHUB_REPO: test-repo
+          NOTION_TOKEN: test-notion-token
+          NOTION_DATABASE_ADR: test-db-adr
+          NOTION_DATABASE_CHANGELOG: test-db-changelog
+          NOTION_DATABASE_API_REF: test-db-api-ref
+          NOTION_DATABASE_RUNBOOKS: test-db-runbooks
+          NOTION_DATABASE_TASKS: test-db-tasks
+          ANTHROPIC_API_KEY: test-anthropic-key
+          PORT: '4000'
+          POLL_INTERVAL_SECONDS: '60'
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-report
+          path: coverage/
+          retention-days: 7
+
+  # ── Semantic release + npm publish ─────────────────────────────────────────
+  release:
+    name: Release
+    needs: ci
+    runs-on: ubuntu-latest
+    if: vars.RELEASE_ENABLED == 'true'
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - run: npm ci
+
+      - run: npm run build
+
+      - name: Semantic Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npx semantic-release
+
+  # ── Docker Hub publish ─────────────────────────────────────────────────────
+  docker:
+    name: Docker
+    needs: release
+    runs-on: ubuntu-latest
+    if: vars.DOCKERHUB_ENABLED == 'true'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - uses: docker/metadata-action@v5
+        id: meta
+        with:
+          images: ${{ secrets.DOCKERHUB_USERNAME }}/notican
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=raw,value=latest
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}

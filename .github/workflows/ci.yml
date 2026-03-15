@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  ci:
+    name: Lint · Build · Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - run: npm ci
+
+      - run: npm run lint
+
+      - run: npm run build
+
+      - name: Test with coverage
+        run: npm test -- --coverage --ci
+        env:
+          GITHUB_WEBHOOK_SECRET: test-secret
+          GITHUB_TOKEN: test-token
+          GITHUB_OWNER: test-owner
+          GITHUB_REPO: test-repo
+          NOTION_TOKEN: test-notion-token
+          NOTION_DATABASE_ADR: test-db-adr
+          NOTION_DATABASE_CHANGELOG: test-db-changelog
+          NOTION_DATABASE_API_REF: test-db-api-ref
+          NOTION_DATABASE_RUNBOOKS: test-db-runbooks
+          NOTION_DATABASE_TASKS: test-db-tasks
+          ANTHROPIC_API_KEY: test-anthropic-key
+          PORT: '4000'
+          POLL_INTERVAL_SECONDS: '60'
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-report
+          path: coverage/
+          retention-days: 7

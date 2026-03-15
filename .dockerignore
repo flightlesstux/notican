@@ -1,0 +1,15 @@
+node_modules
+dist
+coverage
+.env
+.env.*
+!.env.example
+landing
+scripts
+**/*.test.ts
+**/*.spec.ts
+src/__fixtures__
+.github
+*.md
+jest.config.ts
+tsconfig.json

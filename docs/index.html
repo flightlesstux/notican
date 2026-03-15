@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Notican — Autonomous Engineering Intelligence Hub</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%236366f1'/><text y='22' x='5' font-size='18'>⚡</text></svg>" />
+  <!-- OpenGraph -->
+  <meta property="og:title" content="Notican — Autonomous Engineering Intelligence Hub" />
+  <meta property="og:description" content="Bidirectional GitHub and Notion sync powered by Claude AI. Every PR, commit, and issue becomes living documentation automatically." />
+  <meta property="og:image" content="https://notican.click/notican_og.jpg" />
+  <meta property="og:url" content="https://notican.click" />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Notican — Autonomous Engineering Intelligence Hub" />
+  <meta name="twitter:description" content="Bidirectional GitHub and Notion sync powered by Claude AI. Every PR, commit, and issue becomes living documentation automatically." />
+  <meta name="twitter:image" content="https://notican.click/notican_og.jpg" />
+  <meta name="twitter:creator" content="@flightlesstux" />
+
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-T286CY2XTR"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-T286CY2XTR');
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0a0a0f;
+      --bg2:       #0f0f1a;
+      --card:      #12121e;
+      --border:    rgba(99,102,241,0.18);
+      --indigo:    #6366f1;
+      --cyan:      #06b6d4;
+      --green:     #10b981;
+      --text:      #e2e8f0;
+      --muted:     #64748b;
+      --dim:       #94a3b8;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* ── Noise overlay ── */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none; z-index: 0; opacity: 0.4;
+    }
+
+    /* ── Glow blobs ── */
+    .blob {
+      position: fixed; border-radius: 50%; filter: blur(120px);
+      pointer-events: none; z-index: 0; opacity: 0.15;
+      animation: float 12s ease-in-out infinite;
+    }
+    .blob-1 { width: 600px; height: 600px; background: var(--indigo); top: -200px; left: -100px; animation-delay: 0s; }
+    .blob-2 { width: 500px; height: 500px; background: var(--cyan);   bottom: -150px; right: -100px; animation-delay: -6s; }
+    .blob-3 { width: 300px; height: 300px; background: var(--indigo); top: 50%; left: 40%; animation-delay: -3s; }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0) scale(1); }
+      50%       { transform: translateY(-40px) scale(1.05); }
+    }
+
+    /* ── Nav ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      padding: 1.2rem 2rem;
+      display: flex; align-items: center; justify-content: space-between;
+      backdrop-filter: blur(20px);
+      background: rgba(10,10,15,0.7);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo {
+      display: flex; align-items: center; gap: 0.6rem;
+      font-weight: 700; font-size: 1.1rem; letter-spacing: -0.02em;
+      text-decoration: none; color: var(--text);
+    }
+    .nav-logo-icon {
+      width: 30px; height: 30px; border-radius: 8px;
+      background: linear-gradient(135deg, var(--indigo), var(--cyan));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.9rem;
+    }
+    .nav-badge {
+      font-size: 0.65rem; font-weight: 600; letter-spacing: 0.08em;
+      padding: 0.2rem 0.5rem; border-radius: 999px;
+      background: rgba(99,102,241,0.15); color: var(--indigo);
+      border: 1px solid rgba(99,102,241,0.3); text-transform: uppercase;
+    }
+    .nav-links { display: flex; align-items: center; gap: 2rem; }
+    .nav-links a { color: var(--muted); text-decoration: none; font-size: 0.9rem; transition: color 0.2s; }
+    .nav-links a:hover { color: var(--text); }
+    .nav-links .nav-cta {
+      padding: 0.5rem 1.2rem; border-radius: 8px; font-size: 0.85rem; font-weight: 600;
+      background: linear-gradient(135deg, var(--indigo), var(--cyan));
+      color: #fff !important; text-decoration: none; transition: opacity 0.2s;
+    }
+    .nav-links .nav-cta:hover { opacity: 0.85; color: #fff !important; }
+
+    /* ── Sections ── */
+    section { position: relative; z-index: 1; }
+
+    /* ── Hero ── */
+    .hero {
+      min-height: 100vh;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      text-align: center; padding: 8rem 2rem 4rem;
+    }
+    .hero-eyebrow {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      font-size: 0.78rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--cyan); margin-bottom: 1.5rem;
+    }
+    .hero-eyebrow::before, .hero-eyebrow::after {
+      content: ''; flex: 1; height: 1px;
+      background: linear-gradient(to right, transparent, var(--cyan));
+      width: 40px;
+    }
+    .hero-eyebrow::after { background: linear-gradient(to left, transparent, var(--cyan)); }
+    .hero h1 {
+      font-size: clamp(2.8rem, 7vw, 5.5rem);
+      font-weight: 800; letter-spacing: -0.04em; line-height: 1.05;
+      margin-bottom: 1.5rem; max-width: 900px;
+    }
+    .hero h1 .grad {
+      background: linear-gradient(135deg, var(--indigo) 0%, var(--cyan) 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero p {
+      font-size: clamp(1rem, 2.5vw, 1.25rem); color: var(--dim);
+      max-width: 600px; margin-bottom: 2.5rem;
+    }
+    .hero-actions { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; }
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      padding: 0.85rem 2rem; border-radius: 10px; font-size: 0.95rem; font-weight: 600;
+      background: linear-gradient(135deg, var(--indigo), var(--cyan));
+      color: #fff; text-decoration: none; transition: all 0.2s;
+      box-shadow: 0 0 40px rgba(99,102,241,0.3);
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 0 60px rgba(99,102,241,0.4); }
+    .btn-ghost {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      padding: 0.85rem 2rem; border-radius: 10px; font-size: 0.95rem; font-weight: 600;
+      border: 1px solid var(--border); color: var(--text); text-decoration: none;
+      background: rgba(255,255,255,0.03); transition: all 0.2s; backdrop-filter: blur(10px);
+    }
+    .btn-ghost:hover { border-color: var(--indigo); background: rgba(99,102,241,0.08); }
+
+    /* ── Flow diagram ── */
+    .flow-wrap {
+      margin-top: 5rem; width: 100%; max-width: 860px;
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 20px; padding: 2.5rem 2rem; position: relative; overflow: hidden;
+    }
+    .flow-wrap::before {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(ellipse at 50% 0%, rgba(99,102,241,0.08) 0%, transparent 70%);
+    }
+    .flow-label {
+      font-size: 0.72rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--muted); margin-bottom: 1.8rem; text-align: left;
+    }
+    .flow {
+      display: flex; align-items: center; justify-content: center;
+      gap: 0; flex-wrap: nowrap; position: relative;
+    }
+    .flow-node {
+      display: flex; flex-direction: column; align-items: center; gap: 0.6rem;
+      padding: 1.2rem 1.5rem; border-radius: 14px; min-width: 130px;
+      background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+      transition: all 0.3s; position: relative;
+    }
+    .flow-node:hover { border-color: var(--indigo); background: rgba(99,102,241,0.08); transform: translateY(-3px); }
+    .flow-icon { font-size: 2rem; line-height: 1; }
+    .flow-name { font-size: 0.82rem; font-weight: 600; color: var(--text); }
+    .flow-sub { font-size: 0.7rem; color: var(--muted); text-align: center; }
+    .flow-arrow {
+      display: flex; flex-direction: column; align-items: center; gap: 0.2rem;
+      padding: 0 0.8rem; flex-shrink: 0;
+    }
+    .flow-arrow-line {
+      display: flex; align-items: center; gap: 0;
+      color: var(--indigo); font-size: 1.4rem; font-weight: 300;
+    }
+    .flow-arrow-label { font-size: 0.62rem; color: var(--muted); font-family: 'JetBrains Mono', monospace; }
+
+    /* Pulse animation on arrow */
+    .flow-arrow-line { animation: pulse-arrow 2s ease-in-out infinite; }
+    @keyframes pulse-arrow {
+      0%, 100% { opacity: 0.5; }
+      50%       { opacity: 1; color: var(--cyan); }
+    }
+
+    /* ── Stats bar ── */
+    .stats-bar {
+      display: flex; justify-content: center; gap: 0; flex-wrap: wrap;
+      border: 1px solid var(--border); border-radius: 16px;
+      margin: 5rem auto; max-width: 800px; overflow: hidden;
+    }
+    .stat {
+      flex: 1; min-width: 150px; padding: 2rem 1.5rem; text-align: center;
+      border-right: 1px solid var(--border); background: var(--card);
+    }
+    .stat:last-child { border-right: none; }
+    .stat-num {
+      font-size: 2.2rem; font-weight: 800; letter-spacing: -0.04em;
+      background: linear-gradient(135deg, var(--indigo), var(--cyan));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .stat-label { font-size: 0.8rem; color: var(--muted); margin-top: 0.3rem; }
+
+    /* ── Section headers ── */
+    .section-header { text-align: center; margin-bottom: 3.5rem; }
+    .section-tag {
+      display: inline-block; font-size: 0.72rem; font-weight: 600;
+      letter-spacing: 0.12em; text-transform: uppercase; color: var(--cyan);
+      margin-bottom: 0.8rem;
+    }
+    .section-header h2 {
+      font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 800;
+      letter-spacing: -0.03em; margin-bottom: 0.8rem;
+    }
+    .section-header p { color: var(--dim); font-size: 1.05rem; max-width: 520px; margin: 0 auto; }
+
+    /* ── How it works ── */
+    .how { padding: 6rem 2rem; max-width: 1100px; margin: 0 auto; }
+    .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 1.5rem; }
+    .step {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 16px; padding: 2rem; position: relative; overflow: hidden;
+      transition: all 0.3s;
+    }
+    .step:hover { border-color: var(--indigo); transform: translateY(-4px); box-shadow: 0 20px 60px rgba(99,102,241,0.15); }
+    .step-num {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem; font-weight: 600; color: var(--indigo);
+      letter-spacing: 0.1em; margin-bottom: 1rem;
+    }
+    .step-icon { font-size: 2rem; margin-bottom: 1rem; display: block; }
+    .step h3 { font-size: 1rem; font-weight: 700; margin-bottom: 0.5rem; }
+    .step p { font-size: 0.85rem; color: var(--dim); line-height: 1.6; }
+    .step::after {
+      content: ''; position: absolute; top: 0; right: 0;
+      width: 80px; height: 80px; border-radius: 0 16px 0 80px;
+      background: linear-gradient(135deg, rgba(99,102,241,0.08), transparent);
+    }
+
+    /* ── Features ── */
+    .features { padding: 6rem 2rem; background: var(--bg2); }
+    .features-inner { max-width: 1100px; margin: 0 auto; }
+    .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; }
+    .feature {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 16px; padding: 2rem; transition: all 0.3s;
+    }
+    .feature:hover { border-color: rgba(6,182,212,0.4); box-shadow: 0 0 40px rgba(6,182,212,0.08); }
+    .feature-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem; }
+    .feature-icon {
+      width: 40px; height: 40px; border-radius: 10px; font-size: 1.2rem;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(99,102,241,0.12); border: 1px solid rgba(99,102,241,0.2);
+      flex-shrink: 0;
+    }
+    .feature h3 { font-size: 0.95rem; font-weight: 700; }
+    .feature p { font-size: 0.85rem; color: var(--dim); line-height: 1.65; }
+    .feature-tag {
+      display: inline-block; margin-top: 1rem;
+      font-size: 0.68rem; font-weight: 600; letter-spacing: 0.08em;
+      padding: 0.2rem 0.6rem; border-radius: 999px; text-transform: uppercase;
+      background: rgba(16,185,129,0.1); color: var(--green);
+      border: 1px solid rgba(16,185,129,0.2);
+    }
+
+    /* ── Terminal block ── */
+    .terminal-section { padding: 6rem 2rem; max-width: 800px; margin: 0 auto; }
+    .terminal {
+      background: #0d0d14; border: 1px solid var(--border);
+      border-radius: 16px; overflow: hidden;
+      box-shadow: 0 40px 100px rgba(0,0,0,0.5);
+    }
+    .terminal-bar {
+      padding: 0.85rem 1.2rem; display: flex; align-items: center; gap: 0.5rem;
+      background: rgba(255,255,255,0.03); border-bottom: 1px solid var(--border);
+    }
+    .dot { width: 12px; height: 12px; border-radius: 50%; }
+    .dot-red { background: #ff5f57; }
+    .dot-yellow { background: #febc2e; }
+    .dot-green { background: #28c840; }
+    .terminal-title { font-size: 0.75rem; color: var(--muted); margin-left: auto; font-family: 'JetBrains Mono', monospace; }
+    .terminal-body { padding: 1.5rem 1.8rem; font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; line-height: 2; }
+    .t-prompt { color: var(--indigo); }
+    .t-cmd { color: var(--text); }
+    .t-comment { color: var(--muted); }
+    .t-success { color: var(--green); }
+    .t-info { color: var(--cyan); }
+    .t-blank { height: 0.5rem; }
+
+    /* ── Architecture ── */
+    .arch { padding: 6rem 2rem; background: var(--bg2); }
+    .arch-inner { max-width: 900px; margin: 0 auto; }
+    .arch-diagram {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 16px; padding: 2.5rem; font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem; line-height: 2.2; color: var(--dim);
+      overflow-x: auto;
+    }
+    .arch-diagram .highlight { color: var(--cyan); }
+    .arch-diagram .muted { color: var(--muted); }
+    .arch-diagram .accent { color: var(--indigo); }
+    .arch-diagram .green { color: var(--green); }
+
+    /* ── Notion databases ── */
+    .dbs { padding: 6rem 2rem; max-width: 1100px; margin: 0 auto; }
+    .db-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 1rem; }
+    .db-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 14px; padding: 1.5rem; text-align: center; transition: all 0.3s;
+    }
+    .db-card:hover { border-color: var(--indigo); transform: translateY(-3px); }
+    .db-emoji { font-size: 2rem; margin-bottom: 0.75rem; display: block; }
+    .db-name { font-size: 0.88rem; font-weight: 700; margin-bottom: 0.3rem; }
+    .db-desc { font-size: 0.75rem; color: var(--muted); line-height: 1.5; }
+
+    /* ── CTA ── */
+    .cta-section {
+      padding: 8rem 2rem; text-align: center; position: relative;
+    }
+    .cta-section::before {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(ellipse at 50% 50%, rgba(99,102,241,0.12) 0%, transparent 70%);
+    }
+    .cta-section h2 {
+      font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 800;
+      letter-spacing: -0.03em; margin-bottom: 1rem;
+    }
+    .cta-section p { color: var(--dim); font-size: 1.1rem; margin-bottom: 2.5rem; }
+
+    /* ── Footer ── */
+    footer {
+      border-top: 1px solid var(--border); padding: 2rem;
+      text-align: center; color: var(--muted); font-size: 0.8rem;
+    }
+    footer span { color: var(--indigo); }
+
+    /* ── Scroll animations ── */
+    .reveal {
+      opacity: 0; transform: translateY(30px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+    @media (prefers-reduced-motion: reduce) {
+      .reveal { opacity: 1; transform: none; transition: none; }
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 640px) {
+      .nav-links { display: none; }
+      .flow { flex-direction: column; }
+      .flow-arrow { transform: rotate(90deg); }
+      .flow-arrow-label { display: none; }
+      .stats-bar { flex-direction: column; }
+      .stat { border-right: none; border-bottom: 1px solid var(--border); }
+      .stat:last-child { border-bottom: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Ambient blobs -->
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+  <div class="blob blob-3"></div>
+
+  <!-- Nav -->
+  <nav>
+    <a href="#" class="nav-logo">
+      <div class="nav-logo-icon">⚡</div>
+      <span>notican</span>
+      <span class="nav-badge">MCP Challenge</span>
+    </a>
+    <div class="nav-links">
+      <a href="#how">How it works</a>
+      <a href="#features">Features</a>
+      <a href="#setup">Setup</a>
+      <a href="#architecture">Architecture</a>
+      <a class="nav-cta" href="#setup">Get Started →</a>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-eyebrow">
+      <span></span>
+      Notion MCP Challenge Entry
+      <span></span>
+    </div>
+    <h1>
+      Your Codebase,<br/>
+      <span class="grad">Documented by AI.</span><br/>
+      Automatically.
+    </h1>
+    <p>
+      Notican connects GitHub to Notion via Claude AI. Every PR, commit, and issue
+      becomes living documentation — zero manual work.
+    </p>
+    <div class="hero-actions">
+      <a href="#setup" class="btn-primary">⚡ Get Started</a>
+      <a href="#how" class="btn-ghost">See how it works →</a>
+      <a href="https://github.com/flightlesstux/notican" target="_blank" class="btn-ghost" style="display:inline-flex;align-items:center;gap:0.4rem;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.342-3.369-1.342-.454-1.155-1.11-1.463-1.11-1.463-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.831.092-.646.35-1.086.636-1.336-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0112 6.836c.85.004 1.705.115 2.504.337 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.202 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.741 0 .267.18.578.688.48C19.138 20.163 22 16.418 22 12c0-5.523-4.477-10-10-10z"/></svg>
+        GitHub
+      </a>
+    </div>
+
+    <!-- Flow diagram -->
+    <div class="flow-wrap reveal">
+      <div class="flow-label">Live pipeline</div>
+      <div class="flow">
+        <div class="flow-node">
+          <span class="flow-icon">🐙</span>
+          <span class="flow-name">GitHub</span>
+          <span class="flow-sub">PRs · Issues · Pushes</span>
+        </div>
+        <div class="flow-arrow">
+          <div class="flow-arrow-line">→</div>
+          <div class="flow-arrow-label">webhook</div>
+        </div>
+        <div class="flow-node">
+          <span class="flow-icon">⚡</span>
+          <span class="flow-name">Notican</span>
+          <span class="flow-sub">Event processor</span>
+        </div>
+        <div class="flow-arrow">
+          <div class="flow-arrow-line">→</div>
+          <div class="flow-arrow-label">analyze</div>
+        </div>
+        <div class="flow-node">
+          <span class="flow-icon">🤖</span>
+          <span class="flow-name">Claude AI</span>
+          <span class="flow-sub">Sonnet 4.6</span>
+        </div>
+        <div class="flow-arrow">
+          <div class="flow-arrow-line">→</div>
+          <div class="flow-arrow-label">write</div>
+        </div>
+        <div class="flow-node">
+          <span class="flow-icon">📋</span>
+          <span class="flow-name">Notion</span>
+          <span class="flow-sub">Living docs</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Stats -->
+  <div class="stats-bar reveal" style="margin: 0 auto; max-width: 800px; position: relative; z-index: 1;">
+    <div class="stat">
+      <div class="stat-num">5</div>
+      <div class="stat-label">Auto-maintained databases</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">4</div>
+      <div class="stat-label">GitHub event types handled</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">0</div>
+      <div class="stat-label">Manual documentation steps</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">60s</div>
+      <div class="stat-label">Notion → GitHub sync interval</div>
+    </div>
+  </div>
+
+  <!-- How it works -->
+  <section class="how" id="how">
+    <div class="section-header reveal">
+      <div class="section-tag">How it works</div>
+      <h2>Four events. One system.</h2>
+      <p>Notican listens to your GitHub activity and decides what to document — automatically.</p>
+    </div>
+    <div class="steps">
+      <div class="step reveal">
+        <div class="step-num">01 / PULL REQUEST</div>
+        <span class="step-icon">🔀</span>
+        <h3>PR merged to main</h3>
+        <p>Claude reads the diff, generates a Changelog entry and — for significant architecture changes — an Architecture Decision Record (ADR).</p>
+      </div>
+      <div class="step reveal">
+        <div class="step-num">02 / PUSH</div>
+        <span class="step-icon">🚀</span>
+        <h3>Code pushed to main</h3>
+        <p>API file changes update the API Reference. Infrastructure changes (Dockerfile, k8s, Terraform) trigger Runbook creation or updates.</p>
+      </div>
+      <div class="step reveal">
+        <div class="step-num">03 / ISSUES</div>
+        <span class="step-icon">🐛</span>
+        <h3>GitHub issue opened</h3>
+        <p>A linked task is created in the Notion Tasks database. When the issue closes, the task status syncs automatically.</p>
+      </div>
+      <div class="step reveal">
+        <div class="step-num">04 / NOTION → GITHUB</div>
+        <span class="step-icon">🔁</span>
+        <h3>Bidirectional sync</h3>
+        <p>Tag any Notion task with <code style="color:var(--cyan);font-family:JetBrains Mono">github_sync</code> and Notican automatically creates a GitHub issue with full context.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="features" id="features">
+    <div class="features-inner">
+      <div class="section-header reveal">
+        <div class="section-tag">Features</div>
+        <h2>Built for engineering teams.</h2>
+        <p>Everything you need to keep your documentation alive without touching it.</p>
+      </div>
+      <div class="features-grid">
+        <div class="feature reveal">
+          <div class="feature-header">
+            <div class="feature-icon">🧠</div>
+            <h3>Claude-powered diff analysis</h3>
+          </div>
+          <p>Claude Sonnet 4.6 reads every diff and decides what type of documentation to generate — not just templated output, but contextually accurate docs.</p>
+          <span class="feature-tag">AI-native</span>
+        </div>
+        <div class="feature reveal">
+          <div class="feature-header">
+            <div class="feature-icon">🔒</div>
+            <h3>Idempotent writes</h3>
+          </div>
+          <p>Every Notion page is keyed by a GitHub external ID (PR number, commit SHA, issue number). Re-processing an event updates the page, never duplicates it.</p>
+          <span class="feature-tag">Reliable</span>
+        </div>
+        <div class="feature reveal">
+          <div class="feature-header">
+            <div class="feature-icon">⚡</div>
+            <h3>Webhook-first architecture</h3>
+          </div>
+          <p>Real-time processing. HMAC signature verification on every request. The server always returns 200 to GitHub — no retries, no duplicate events.</p>
+          <span class="feature-tag">Production-ready</span>
+        </div>
+        <div class="feature reveal">
+          <div class="feature-header">
+            <div class="feature-icon">🔄</div>
+            <h3>Bidirectional sync</h3>
+          </div>
+          <p>Notion isn't just a write target. Tasks flow from Notion to GitHub Issues automatically, making Notion the single source of truth for your team.</p>
+          <span class="feature-tag">Two-way</span>
+        </div>
+        <div class="feature reveal">
+          <div class="feature-header">
+            <div class="feature-icon">🎯</div>
+            <h3>Smart file classification</h3>
+          </div>
+          <p>Pattern-based routing distinguishes API changes from infra changes from architecture changes. Each triggers the right doc type automatically.</p>
+          <span class="feature-tag">Intelligent</span>
+        </div>
+        <div class="feature reveal">
+          <div class="feature-header">
+            <div class="feature-icon">🧪</div>
+            <h3>Test-driven development</h3>
+          </div>
+          <p>80% coverage enforced in CI. Every layer independently testable. Fixtures for all event types. No mocking of real external calls in tests.</p>
+          <span class="feature-tag">TDD</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Setup / terminal -->
+  <section class="terminal-section" id="setup">
+    <div class="section-header reveal">
+      <div class="section-tag">Setup</div>
+      <h2>Running in minutes.</h2>
+      <p>Three commands to get your team's documentation pipeline live.</p>
+    </div>
+    <div class="terminal reveal">
+      <div class="terminal-bar">
+        <div class="dot dot-red"></div>
+        <div class="dot dot-yellow"></div>
+        <div class="dot dot-green"></div>
+        <div class="terminal-title">notican — zsh</div>
+      </div>
+      <div class="terminal-body">
+        <div><span class="t-comment"># 1. Clone and install</span></div>
+        <div><span class="t-prompt">$</span> <span class="t-cmd">git clone https://github.com/flightlesstux/notican &amp;&amp; cd notican</span></div>
+        <div><span class="t-prompt">$</span> <span class="t-cmd">npm install</span></div>
+        <div class="t-blank"></div>
+        <div><span class="t-comment"># 2. Configure your tokens</span></div>
+        <div><span class="t-prompt">$</span> <span class="t-cmd">cp .env.example .env</span></div>
+        <div><span class="t-prompt">$</span> <span class="t-cmd">vim .env</span> <span class="t-comment">  # add GitHub, Notion, Anthropic tokens</span></div>
+        <div class="t-blank"></div>
+        <div><span class="t-comment"># 3. Create Notion workspace structure</span></div>
+        <div><span class="t-prompt">$</span> <span class="t-cmd">npm run setup:notion</span></div>
+        <div><span class="t-success">✓ Created: Architecture Decisions database</span></div>
+        <div><span class="t-success">✓ Created: Changelog database</span></div>
+        <div><span class="t-success">✓ Created: API Reference database</span></div>
+        <div><span class="t-success">✓ Created: Runbooks database</span></div>
+        <div><span class="t-success">✓ Created: Tasks database</span></div>
+        <div class="t-blank"></div>
+        <div><span class="t-comment"># 4. Start the server</span></div>
+        <div><span class="t-prompt">$</span> <span class="t-cmd">npm run dev</span></div>
+        <div><span class="t-info">⚡ Notican running on http://localhost:4000</span></div>
+        <div><span class="t-info">📡 Webhook endpoint: POST /webhooks/github</span></div>
+        <div><span class="t-info">🔄 Notion watcher: polling every 60s</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Architecture -->
+  <section class="arch" id="architecture">
+    <div class="arch-inner">
+      <div class="section-header reveal">
+        <div class="section-tag">Architecture</div>
+        <h2>Clean layers. Clear boundaries.</h2>
+        <p>Each module has a single responsibility. No layer crosses into another's domain.</p>
+      </div>
+      <div class="arch-diagram reveal">
+<pre>
+<span class="highlight">GitHub</span>  ──webhook──►  <span class="accent">src/server/</span>        HMAC verification, routing
+                           │
+                           ▼
+                      <span class="accent">src/handlers/</span>      Parse event, decide what to generate
+                     ┌─────┴──────┐
+                     │            │
+                     ▼            ▼
+             <span class="accent">src/processors/</span>   <span class="accent">src/github/</span>    Claude AI · GitHub API
+             <span class="green">claude.ts</span>         <span class="green">client.ts</span>
+                     │
+                     ▼
+               <span class="accent">src/notion/</span>        Write structured docs (idempotent)
+               <span class="green">client.ts</span>          Markdown → Notion blocks
+
+<span class="highlight">Notion</span>  ◄──poll 60s──  <span class="accent">src/watcher/</span>       Tasks with github_sync=true
+                           │
+                           ▼
+                      <span class="accent">src/github/</span>        Creates GitHub issue, marks task synced
+</pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- Notion databases -->
+  <section class="dbs">
+    <div class="section-header reveal">
+      <div class="section-tag">Notion workspace</div>
+      <h2>Five living databases.</h2>
+      <p>Auto-created by <code style="color:var(--cyan);font-family:JetBrains Mono;font-size:0.9em">npm run setup:notion</code>. Maintained forever after.</p>
+    </div>
+    <div class="db-grid">
+      <div class="db-card reveal">
+        <span class="db-emoji">📐</span>
+        <div class="db-name">Architecture Decisions</div>
+        <div class="db-desc">ADRs generated from significant PRs</div>
+      </div>
+      <div class="db-card reveal">
+        <span class="db-emoji">📋</span>
+        <div class="db-name">Changelog</div>
+        <div class="db-desc">Auto-entry on every merge to main</div>
+      </div>
+      <div class="db-card reveal">
+        <span class="db-emoji">📡</span>
+        <div class="db-name">API Reference</div>
+        <div class="db-desc">Updated when API files change</div>
+      </div>
+      <div class="db-card reveal">
+        <span class="db-emoji">📖</span>
+        <div class="db-name">Runbooks</div>
+        <div class="db-desc">Generated from infra changes</div>
+      </div>
+      <div class="db-card reveal">
+        <span class="db-emoji">✅</span>
+        <div class="db-name">Tasks</div>
+        <div class="db-desc">Bidirectional sync with GitHub Issues</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-section">
+    <h2 class="reveal">Stop writing docs.<br/><span class="grad">Start shipping.</span></h2>
+    <p class="reveal">Your documentation writes itself. Your team stays in flow.</p>
+    <div class="hero-actions reveal">
+      <a href="#setup" class="btn-primary">⚡ Set up in 5 minutes</a>
+      <a href="#how" class="btn-ghost">Learn more →</a>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    Built with <span>Claude Sonnet 4.6</span> + Notion MCP · Notion MCP Challenge 2026
+    &nbsp;·&nbsp; by <a href="https://ercanermis.com" target="_blank" style="color:var(--indigo);text-decoration:none">Ercan Ermis</a>
+    &nbsp;·&nbsp; <a href="https://x.com/flightlesstux" target="_blank" style="color:var(--muted);text-decoration:none">𝕏</a>
+    &nbsp;·&nbsp; <a href="https://linkedin.com/in/ercanermis" target="_blank" style="color:var(--muted);text-decoration:none">LinkedIn</a>
+    &nbsp;·&nbsp; <a href="https://github.com/flightlesstux" target="_blank" style="color:var(--muted);text-decoration:none">GitHub</a>
+  </footer>
+
+  <script>
+    // Scroll-reveal
+    const observer = new IntersectionObserver(
+      (entries) => entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); }),
+      { threshold: 0.12 }
+    );
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+    // Stagger children inside grids
+    document.querySelectorAll('.steps, .features-grid, .db-grid').forEach(grid => {
+      grid.querySelectorAll('.reveal').forEach((child, i) => {
+        child.style.transitionDelay = `${i * 80}ms`;
+      });
+    });
+  </script>
+</body>
+</html>
