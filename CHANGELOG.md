@@ -1,3 +1,9 @@
+## [1.1.1](https://github.com/flightlesstux/notican/compare/v1.1.0...v1.1.1) (2026-03-28)
+
+### Bug Fixes
+
+* **landing:** update sync tag from github_sync to /notican command ([448e96a](https://github.com/flightlesstux/notican/commit/448e96ad4b61c11db46ceeea1392c8af75ce17d5))
+
 ## [1.1.0](https://github.com/flightlesstux/notican/compare/v1.0.1...v1.1.0) (2026-03-15)
 
 ### Features
