@@ -5,27 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Notican — Autonomous Engineering Intelligence Hub</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%236366f1'/><text y='22' x='5' font-size='18'>⚡</text></svg>" />
-  <!-- OpenGraph -->
-  <meta property="og:title" content="Notican — Autonomous Engineering Intelligence Hub" />
-  <meta property="og:description" content="Bidirectional GitHub and Notion sync powered by Claude AI. Every PR, commit, and issue becomes living documentation automatically." />
-  <meta property="og:image" content="https://notican.click/notican_og.jpg" />
-  <meta property="og:url" content="https://notican.click" />
-  <meta property="og:type" content="website" />
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Notican — Autonomous Engineering Intelligence Hub" />
-  <meta name="twitter:description" content="Bidirectional GitHub and Notion sync powered by Claude AI. Every PR, commit, and issue becomes living documentation automatically." />
-  <meta name="twitter:image" content="https://notican.click/notican_og.jpg" />
-  <meta name="twitter:creator" content="@flightlesstux" />
-
-  <!-- Google Analytics -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-T286CY2XTR"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-T286CY2XTR');
-  </script>
-
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
@@ -521,7 +500,7 @@
         <div class="step-num">04 / NOTION → GITHUB</div>
         <span class="step-icon">🔁</span>
         <h3>Bidirectional sync</h3>
-        <p>Tag any Notion task with <code style="color:var(--cyan);font-family:JetBrains Mono">github_sync</code> and Notican automatically creates a GitHub issue with full context.</p>
+        <p>Tag any Notion task with <code style="color:var(--cyan);font-family:JetBrains Mono">/notican</code> and Notican automatically creates a GitHub issue with full context.</p>
       </div>
     </div>
   </section>
@@ -651,7 +630,7 @@
                <span class="accent">src/notion/</span>        Write structured docs (idempotent)
                <span class="green">client.ts</span>          Markdown → Notion blocks
 
-<span class="highlight">Notion</span>  ◄──poll 60s──  <span class="accent">src/watcher/</span>       Tasks with github_sync=true
+<span class="highlight">Notion</span>  ◄──poll 60s──  <span class="accent">src/watcher/</span>       Tasks tagged /notican
                            │
                            ▼
                       <span class="accent">src/github/</span>        Creates GitHub issue, marks task synced
