@@ -1,3 +1,9 @@
+## [1.1.2](https://github.com/flightlesstux/notican/compare/v1.1.1...v1.1.2) (2026-03-28)
+
+### Bug Fixes
+
+* **docs:** sync landing page /notican tag update to GitHub Pages ([f2493a9](https://github.com/flightlesstux/notican/commit/f2493a91d86c3f7cdd4f2fe25191bd83dd460881))
+
 ## [1.1.1](https://github.com/flightlesstux/notican/compare/v1.1.0...v1.1.1) (2026-03-28)
 
 ### Bug Fixes
