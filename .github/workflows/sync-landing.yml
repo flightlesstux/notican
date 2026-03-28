@@ -21,7 +21,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Copy landing to docs
-        run: cp landing/index.html docs/index.html
+        run: bash scripts/sync-landing.sh
 
       - name: Commit if changed
         run: |
